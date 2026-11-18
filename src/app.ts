@@ -5,7 +5,7 @@ import helmet from "helmet";
 import path from "node:path";
 import { env } from "./config/env.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
-import { checkOrigin } from "./middleware/origin.js";
+import { checkOrigin, isAllowedOrigin } from "./middleware/origin.js";
 import routes from "./routes/index.js";
 
 const app = express();
@@ -16,11 +16,20 @@ app.set("trust proxy", env.TRUST_PROXY);
 const helmetMiddleware = ((helmet as any)?.default ?? helmet) as (options?: unknown) => express.RequestHandler;
 app.use(helmetMiddleware({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
-const origins = [...env.FRONTEND_URL.split(","), env.ADMIN_URL]
-  .map((s) => s.trim().replace(/\/$/, ""))
-  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow requests with no origin (like same-origin, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Let checkOrigin middleware handle the strict check with ApiError
+    },
+    credentials: true,
+  }),
+);
 
-app.use(cors({ origin: origins, credentials: true }));
 // Allow up to 10MB JSON for image uploads
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());

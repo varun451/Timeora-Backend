@@ -9,6 +9,23 @@ const allowedOrigins = new Set(
     .filter(Boolean),
 );
 
+export function isAllowedOrigin(origin: string): boolean {
+  const originLower = origin.toLowerCase().replace(/\/$/, "");
+  if (allowedOrigins.has(originLower)) return true;
+
+  // Allow all Timeora Vercel deployments (production + preview domains like timeora-admin-xxx.vercel.app)
+  if (originLower.endsWith(".vercel.app") && originLower.includes("timeora")) {
+    return true;
+  }
+
+  // Allow local development
+  if (env.NODE_ENV !== "production" && (originLower.includes("localhost") || originLower.includes("127.0.0.1"))) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Validates Origin/Referer header on state-changing browser requests (POST, PUT, PATCH, DELETE)
  * to provide defense-in-depth on top of SameSite=Lax cookies.
@@ -23,23 +40,14 @@ export const checkOrigin: RequestHandler = (req, _res, next) => {
   const referer = req.headers.referer;
 
   if (origin) {
-    const originLower = origin.toLowerCase().replace(/\/$/, "");
-    if (allowedOrigins.has(originLower)) return next();
-    // Allow local development ports variations if in dev
-    if (env.NODE_ENV !== "production" && (originLower.includes("localhost") || originLower.includes("127.0.0.1"))) {
-      return next();
-    }
+    if (isAllowedOrigin(origin)) return next();
     throw new ApiError(403, "Cross-site request blocked");
   }
 
   if (referer) {
     try {
       const refUrl = new URL(referer);
-      const refOrigin = refUrl.origin.toLowerCase().replace(/\/$/, "");
-      if (allowedOrigins.has(refOrigin)) return next();
-      if (env.NODE_ENV !== "production" && (refOrigin.includes("localhost") || refOrigin.includes("127.0.0.1"))) {
-        return next();
-      }
+      if (isAllowedOrigin(refUrl.origin)) return next();
     } catch {
       throw new ApiError(403, "Invalid request referer");
     }
