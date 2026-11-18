@@ -1,0 +1,46 @@
+{
+  "name": "timeora-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
+    "catalog:add-women": "tsx scripts/add-women-catalog.ts",
+    "catalog:replace": "tsx scripts/replace-catalog.ts",
+    "migrate": "tsx scripts/migrate-phase1.ts",
+    "migrate:phase2": "tsx scripts/migrate-phase2.ts",
+    "migrate:gender": "tsx scripts/migrate-gender.ts",
+    "migrate:seller-products-direct-publish": "tsx scripts/migrate-seller-products-direct-publish.ts",
+    "test:phase1": "tsx scripts/test-phase1.ts",
+    "test:phase2": "tsx scripts/test-phase2.ts",
+    "test:phase3": "tsx scripts/test-phase3.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jose": "^6.2.15",
+    "mongoose": "^9.11.4",
+    "nodemailer": "^10.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}
