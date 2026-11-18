@@ -4,8 +4,8 @@ import { ApiError } from "../utils/http.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const allowedOrigins = new Set(
-  env.FRONTEND_URL.split(",")
-    .map((s) => s.trim().toLowerCase())
+  [...env.FRONTEND_URL.split(","), env.ADMIN_URL]
+    .map((s) => s.trim().toLowerCase().replace(/\/$/, ""))
     .filter(Boolean),
 );
 
@@ -23,7 +23,7 @@ export const checkOrigin: RequestHandler = (req, _res, next) => {
   const referer = req.headers.referer;
 
   if (origin) {
-    const originLower = origin.toLowerCase();
+    const originLower = origin.toLowerCase().replace(/\/$/, "");
     if (allowedOrigins.has(originLower)) return next();
     // Allow local development ports variations if in dev
     if (env.NODE_ENV !== "production" && (originLower.includes("localhost") || originLower.includes("127.0.0.1"))) {
@@ -35,7 +35,7 @@ export const checkOrigin: RequestHandler = (req, _res, next) => {
   if (referer) {
     try {
       const refUrl = new URL(referer);
-      const refOrigin = refUrl.origin.toLowerCase();
+      const refOrigin = refUrl.origin.toLowerCase().replace(/\/$/, "");
       if (allowedOrigins.has(refOrigin)) return next();
       if (env.NODE_ENV !== "production" && (refOrigin.includes("localhost") || refOrigin.includes("127.0.0.1"))) {
         return next();
@@ -49,4 +49,3 @@ export const checkOrigin: RequestHandler = (req, _res, next) => {
   // Same-origin or non-browser client without origin header
   next();
 };
-

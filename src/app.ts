@@ -12,11 +12,24 @@ const app = express();
 
 app.set("trust proxy", env.TRUST_PROXY);
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors({ origin: env.FRONTEND_URL.split(",").map((s) => s.trim()), credentials: true }));
+
+const origins = [...env.FRONTEND_URL.split(","), env.ADMIN_URL]
+  .map((s) => s.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+app.use(cors({ origin: origins, credentials: true }));
 // Allow up to 10MB JSON for image uploads
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(checkOrigin);
+
+// Root & health endpoints for deployment uptime / verification
+app.get("/", (_req, res) => {
+  res.json({ success: true, message: "Timeora Backend API running" });
+});
+app.get("/health", (_req, res) => {
+  res.json({ success: true, status: "ok" });
+});
 
 // Serve uploaded images statically
 app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
