@@ -11,7 +11,10 @@ import routes from "./routes/index.js";
 const app = express();
 
 app.set("trust proxy", env.TRUST_PROXY);
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+// Helmet CJS/ESM interop handling for cross-platform builds
+const helmetMiddleware = ((helmet as any)?.default ?? helmet) as (options?: unknown) => express.RequestHandler;
+app.use(helmetMiddleware({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 const origins = [...env.FRONTEND_URL.split(","), env.ADMIN_URL]
   .map((s) => s.trim().replace(/\/$/, ""))
