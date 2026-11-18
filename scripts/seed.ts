@@ -20,7 +20,6 @@ async function main() {
           name: "Super Admin",
           email,
           passwordHash: await bcrypt.hash(pw, 12),
-          role: "super_admin",
           tokenVersion: 0,
         },
         $set: { role: "super_admin" },
